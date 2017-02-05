@@ -1,5 +1,5 @@
 package battleship;
 
-public class board {
+public class Board {
 
 }
