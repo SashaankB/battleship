@@ -33,30 +33,6 @@
             </Menu>
           </menus>
         </MenuBar>
-        <Button contentDisplay="GRAPHIC_ONLY" layoutX="46.0" layoutY="180.0" mnemonicParsing="false" opacity="0.0" prefHeight="32.0" prefWidth="109.0" text="ship3" />
-      <ImageView fitHeight="32.0" fitWidth="109.0" layoutX="46.0" layoutY="180.0" pickOnBounds="true" preserveRatio="true">
-         <image>
-            <Image url="@ship2.png" />
-         </image>
-      </ImageView>
-        <Button layoutX="49.0" layoutY="245.0" mnemonicParsing="false" opacity="0.0" prefHeight="38.0" prefWidth="104.0" text="ship3(2)" />
-      <ImageView fitHeight="36.0" fitWidth="104.0" layoutX="48.0" layoutY="246.0" pickOnBounds="true" preserveRatio="true">
-         <image>
-            <Image url="@ship3.png" />
-         </image>
-      </ImageView>
-        <Button layoutX="20.0" layoutY="312.0" mnemonicParsing="false" opacity="0.0" prefHeight="37.0" prefWidth="163.0" text="ship4" />
-      <ImageView fitHeight="37.0" fitWidth="163.0" layoutX="9.0" layoutY="312.0" pickOnBounds="true" preserveRatio="true">
-         <image>
-            <Image url="@ship4.png" />
-         </image>
-      </ImageView>
-        <Button layoutX="9.0" layoutY="388.0" mnemonicParsing="false" opacity="0.0" prefHeight="40.0" prefWidth="183.0" text="ship5" />
-      <ImageView fitHeight="40.0" fitWidth="183.0" layoutX="9.0" layoutY="388.0" pickOnBounds="true" preserveRatio="true">
-         <image>
-            <Image url="@ship5.png" />
-         </image>
-      </ImageView>
         <Button layoutX="733.0" layoutY="502.0" mnemonicParsing="false" prefHeight="52.0" prefWidth="122.0" text="Start Game">
            <font>
               <Font size="16.0" />

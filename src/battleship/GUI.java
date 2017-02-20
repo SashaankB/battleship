@@ -17,6 +17,10 @@ import javafx.stage.Stage;
 import sun.applet.Main;
  
 public class GUI extends Application {
+	private ImageView[] shipImage;
+	private Button[] shipButton;
+	private AnchorPane pane;
+	
     public static void main(String[] args) {
         launch(args);
     }
@@ -34,40 +38,49 @@ public class GUI extends Application {
         primaryStage.sizeToScene();
         FXMLLoader loader = new FXMLLoader();
         loader.setLocation(Main.class.getResource("/View.fxml"));
-        AnchorPane pane =  loader.load();
+        pane =  loader.load();
         pane.setBackground(new Background(BI));
-        setShipButtons(pane);
+        
+        shipImage = new ImageView[5];
+        shipButton = new Button[5];
+        setShip(0, 65, 112);
+        setShip(1, 46, 180);
+        setShip(2, 49, 245);
+        setShip(3, 20, 312);
+        setShip(4, 9, 388);
+        
         Scene scene = new Scene(pane);
         primaryStage.setScene(scene);
         primaryStage.show();
-    }
-    
-    private void setShipButtons(AnchorPane pane){
-    	ImageView viewShip1 = new ImageView(new Image(Main.class.getResourceAsStream("/ship1.png")));
-    	viewShip1.setLayoutX(65);
-    	viewShip1.setLayoutY(112);
-    	Button ship1 = new Button("");
-    	ship1.setLayoutX(65);
-    	ship1.setLayoutY(112);
-    	ship1.setPrefSize(71, 36);
-    	ship1.setOpacity(0.0);
-    	pane.getChildren().add(viewShip1);
-    	pane.getChildren().add(ship1);
-    	
-    	ship1.addEventHandler(MouseEvent.MOUSE_PRESSED,
+        
+        //example button implementation, would also start hover cursor over grid
+        shipButton[0].addEventHandler(MouseEvent.MOUSE_PRESSED,
     		    new EventHandler<MouseEvent>() {
     		        @Override public void handle(MouseEvent e) {
-    		        	viewShip1.setOpacity(0.5);
+    		        	shipImage[0].setOpacity(0.5);
     		        }
-    	});
+        });
+    }
+    
+
     	
-    	//TODO
-    	//Move the other 4 ship buttons/imageViews from View.fxml into setShipButtons
-    	//Using the PrefSize/Layout from View.fxml to set that info here
-    	//Gives us control when we want to have events happen on button press like you see above
+
+    private void setShip(int index, double x, double y){
+    	Image temp = new Image(Main.class.getResourceAsStream("/ship" + (index+1) + ".png"));
+    	shipImage[index] = new ImageView(temp);
+    	shipImage[index].setLayoutX(x);
+    	shipImage[index].setLayoutY(y);
+    	shipButton[index] = new Button("");
+    	shipButton[index].setLayoutX(x);
+    	shipButton[index].setLayoutY(y);
+    	shipButton[index].setPrefSize(temp.getWidth(), temp.getHeight());
+    	shipButton[index].setOpacity(0.0);
+    	pane.getChildren().add(shipImage[index]);
+    	pane.getChildren().add(shipButton[index]);
+    	
+    }
     	
     	//TODO
     	//Create a 10x10 of buttons on top of the grid for placing the ships, using for loop
     	//Figure out how to cursor hover for buttons
-    }
 }
