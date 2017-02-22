@@ -2,24 +2,18 @@ package battleship;
 
 public class Board {
 	
-	private final int B_SIZE = 10; 
-	private int[][] coord;
+	private boolean[][] grid;
 	
 	public Board() {
-		
-		coord = new int[B_SIZE][B_SIZE];
-		
+		grid = new boolean[10][10];
 	}
 	
-	public boolean hit(int x, int y) {
-		if ( coord[x][y] == 0) {
-			coord[x][y] = 1;
-			return true;
-		}
-		
-		return false;
+	public void setPoint(int x, int y) {
+		grid[x][y] = true;
 	}
 	
-	
+	public boolean getPoint(int x, int y){
+		return grid[x][y];
+	}
 	
 }
