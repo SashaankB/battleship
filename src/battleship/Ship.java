@@ -2,34 +2,33 @@ package battleship;
 
 public class Ship {
 	
-	/* Ships are an x and y point with direction, length
+	/* Ships are a point with direction, length
 	 * and amount of times hit.
 	 */
 	
-	private int x;
-	private int y;
+	private Point p;
 	private boolean direction; //0 horizontal, 1 vertical
 	private int length;
 	private int hit;
 	
-	public Ship(int x, int y, boolean direction, int length){
-		this.x = x;
-		this.y = y;
+	public Ship(Point p, boolean direction, int length){
+		this.p = p;
 		this.direction = direction;
 		this.length = length;
 	}
 	
-	/* Does not keep track of which points are hit, the board will
-	 * do that, only keeps of track of how many times been hit
+	/* Increments hit if point is on the ship.
 	 * 
-	 * returns true if ship has been sunk, false otherwise.
+	 * returns true if ship was hit.
 	 */
-	public boolean hit(int x, int y){
-		if (this.y == y && direction && (this.x - x <= length && this.x - x >= 0))
+	public boolean hit(Point i){
+		if (i.y == p.y && direction && (i.x - p.x <= length && i.x - p.x >= 0))
 			hit++;
-		else if (this.x == x && !direction && (this.y - y <= length && this.y - y >= 0))
+		else if (i.x == p.x && !direction && (i.y - p.y <= length && i.y - p.y >= 0))
 			hit++;
-		return hit == length;
+		else
+			return false;
+		return true;
 	}
 	
 	public boolean hasSank(){
