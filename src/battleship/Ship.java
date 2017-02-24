@@ -7,7 +7,7 @@ public class Ship {
 	 */
 	
 	private Point p;
-	private boolean direction; //0 horizontal, 1 vertical
+	private boolean direction; //true == horizontal, false == vertical
 	private int length;
 	private int hit;
 	
@@ -22,13 +22,23 @@ public class Ship {
 	 * returns true if ship was hit.
 	 */
 	public boolean hit(Point i){
-		if (i.y == p.y && direction && (i.x - p.x <= length && i.x - p.x >= 0))
+		if (isShip(i)) {
 			hit++;
-		else if (i.x == p.x && !direction && (i.y - p.y <= length && i.y - p.y >= 0))
-			hit++;
+			return true;
+		}
+		return false;
+		
+	}
+	
+	public boolean isShip(Point i){
+		//horizontal
+		if (i.y == p.y && direction && i.x - p.x < length && i.x - p.x >= 0)
+			return true;
+		//vertical
+		else if (i.x == p.x && !direction && i.y - p.y < length && i.y - p.y >= 0)
+			return true;
 		else
 			return false;
-		return true;
 	}
 	
 	public boolean hasSank(){
