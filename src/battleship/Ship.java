@@ -15,6 +15,13 @@ public class Ship {
 		this.p = p;
 		this.direction = direction;
 		this.length = length;
+		if (direction) {
+			if (p.x + length > 10)
+				throw new IndexOutOfBoundsException();
+		} else {
+			if (p.y + length > 10)
+				throw new IndexOutOfBoundsException();
+		}
 	}
 	
 	/* Increments hit if point is on the ship.
