@@ -1,6 +1,7 @@
 package battleship;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 
 import javafx.application.Application;
 import javafx.beans.value.ObservableValue;
@@ -11,6 +12,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
@@ -25,6 +27,7 @@ public class GUI extends Application {
 	private Button[][] aiGrid;
 	private int shipButtonLength;
 	private Board board;
+	private boolean direction;
 	
     public static void main(String[] args) {
         launch(args);
@@ -34,8 +37,8 @@ public class GUI extends Application {
     @Override
     public void start(Stage primaryStage) throws IOException {
         primaryStage.setTitle("Battleship");
-        
-        BackgroundImage BI = new BackgroundImage(new Image("battleshipBackground.png", 1094, 625,false,true),
+        Image image = new javafx.scene.image.Image(getClass().getResource("/BattleshipBackground.png").toExternalForm());
+        BackgroundImage BI = new BackgroundImage(image,
         		BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT,
                 BackgroundSize.DEFAULT);
 
@@ -59,8 +62,10 @@ public class GUI extends Application {
         ships.selectedToggleProperty().addListener(o -> {
         	if (ships.getSelectedToggle() == null)
         		shipButtonLength = 0;
-        	else
-        		shipButtonLength = (int) ships.getSelectedToggle().getUserData();
+        	else {
+        		int[] data = (int[]) ships.getSelectedToggle().getUserData();
+        		shipButtonLength = data[0];
+        	}
         });
         placeShips();
         
@@ -85,7 +90,8 @@ public class GUI extends Application {
     	shipButton[index].setOpacity(0.0);
     	shipButton[index].setToggleGroup(ships);
     	//length of ship is width of ship image / 34 pixels
-    	shipButton[index].setUserData((int) temp.getWidth() / 34);
+    	int[] data = {(int) temp.getWidth() / 34, index};
+    	shipButton[index].setUserData(data);
     	pane.getChildren().add(shipImage[index]);
     	pane.getChildren().add(shipButton[index]);    
     	
@@ -111,7 +117,10 @@ public class GUI extends Application {
     		        	if (!allowShip(innerX, innerY))
     		        		return;
     		        	for (int a = shipButtonLength-1; a >= 0; a--){  
-    		        		aiGrid[innerX][innerY + a].setOpacity(0.20);
+    		        		if (!direction)
+    		        			aiGrid[innerX][innerY + a].setOpacity(0.2);
+    		        		else
+    		        			aiGrid[innerX + a][innerY].setOpacity(0.2);
     		        	}
     		        }
         		});
@@ -120,22 +129,53 @@ public class GUI extends Application {
     		        	if (!allowShip(innerX, innerY))
     		        		return;
     		        	for (int a = shipButtonLength-1; a >= 0; a--){
-    		        		aiGrid[innerX][innerY + a].setOpacity(0.6);
+    		        		if (!direction)
+    		        			aiGrid[innerX][innerY + a].setOpacity(0.6);
+    		        		else
+    		        			aiGrid[innerX + a][innerY].setOpacity(0.6);
     		        	}
     		        }
         		});
         		aiGrid[x][y].setOnMousePressed(new EventHandler<MouseEvent>() {
     		        @Override public void handle(MouseEvent e) {
-    		        	if (!allowShip(innerX, innerY))
+    		        	
+    		        	if (e.getButton() == MouseButton.SECONDARY) {
+    		        		
+    		        		direction = !direction;
+    		        		if (!allowShip(innerX, innerY)) {
+        		        		direction = !direction;
+        		        		return;
+    		        		}
+        		        	for (int a = shipButtonLength-1; a >= 0; a--){
+        		        		if (direction) {
+        		        			if (!allowShip(innerX, innerY + a))
+        		        				aiGrid[innerX][innerY + a].setOpacity(0.6);
+        		        			if (!allowShip(innerX + a, innerY))
+        		        				aiGrid[innerX + a][innerY].setOpacity(0.2);
+        		        			
+        		        		}
+        		        		else {
+        		        			if (!allowShip(innerX + a, innerY))
+        		        				aiGrid[innerX + a][innerY].setOpacity(0.6);
+        		        			if (!allowShip(innerX, innerY + a))
+        		        				aiGrid[innerX][innerY + a].setOpacity(0.2);
+        		        		}
+        		        	}
     		        		return;
-    		        	Ship ship = new Ship(new Point(innerX, innerY), false, shipButtonLength);
-    		        	board.addShip(ship);
-    		        	ships.getSelectedToggle().setUserData(0);
-    		        	for (int a =  shipButtonLength-1; a >= 0; a--){  
-    		        		//aiGrid[innerX][innerY + a].setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(5))));
-    		        		aiGrid[innerX][innerY + a].setOpacity(0.0);
+    		        	} else {
+	    		        	if (!allowShip(innerX, innerY))
+	    		        		return;
+	    		        	Ship ship = new Ship(new Point(innerX, innerY), false, shipButtonLength);
+	    		        	board.addShip(ship);
+	    		        	int[] data = (int[]) ships.getSelectedToggle().getUserData();
+	    	        		shipImage[data[1]].setOpacity(0.4);
+	    		        	ships.getSelectedToggle().setUserData(new int[] {0, data[1]});
+	    		        	for (int a =  shipButtonLength-1; a >= 0; a--){  
+	    		        		//aiGrid[innerX][innerY + a].setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(5))));
+	    		        		aiGrid[innerX][innerY + a].setOpacity(0.0);
+	    		        	}
+	    		        	shipButtonLength = 0;
     		        	}
-    		        	shipButtonLength = 0;
     		        }
         		});
         		pane.getChildren().add(aiGrid[x][y]);
@@ -144,11 +184,20 @@ public class GUI extends Application {
     }
     
     private boolean allowShip(int x, int y) {
-    	if (y + shipButtonLength > 10)
-    		return false;
-    	for (int i = shipButtonLength-1; i >= 0; i--){
-    		if (board.isShip(new Point(x, y + i)))
-    			return false;
+    	if (!direction) {
+	    	if (y + shipButtonLength > 10)
+	    		return false;
+	    	for (int i = shipButtonLength-1; i >= 0; i--){
+	    		if (board.isShip(new Point(x, y + i)))
+	    			return false;
+	    	}
+    	} else {
+    		if (x + shipButtonLength > 10)
+	    		return false;
+	    	for (int i = shipButtonLength-1; i >= 0; i--){
+	    		if (board.isShip(new Point(x + i, y)))
+	    			return false;
+	    	}
     	}
     	return true;
     }
