@@ -5,6 +5,7 @@ import java.util.Random;
 public class AI {	
 	//Keeps track of either hunt/target mode
 	private boolean hunt;
+	
 
 	
 	
@@ -41,23 +42,21 @@ public class AI {
 //		start[1] = randy;
 //		return start;
 //	}
-	public static int[] randomShip(int [] s){
+	
+
+	public void randomShip(){
 		Random randomGenerator = new Random();
 		int randx = randomGenerator.nextInt(10);
 		System.out.println("Random x = " + randx);
 		int randy = randomGenerator.nextInt(10);
 		System.out.println("Random y = " + randy);
+		Point p = new Point(randx, randy);
+		boolean randomdirection = Math.random() < 0.5;		
 		
-		try{
-			
-		}
-		catch(Exception e){
-			
-		}
-		s = new int[2];
-		s[0] = randx;
-		s[1] = randy;
-		return s;
+		Ship s = new Ship(p, randomdirection, randy);
+
+		Ship [] ship = s;
+		return ship[s];
 	}
 	
 	/*Parameter is a board instance
