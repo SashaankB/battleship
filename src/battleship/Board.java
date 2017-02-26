@@ -45,4 +45,14 @@ public class Board {
 		
 	}
 	
+	//returns if all ships have been added
+	public boolean allShips(){
+		return shipIndex == 4;
+	}
+	
+	//ships can no longer be placed
+	public void stopPlacing(){
+		setShip = false;
+	}
+	
 }
