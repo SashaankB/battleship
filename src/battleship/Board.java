@@ -6,11 +6,13 @@ public class Board {
 	private Ship[] ships;
 	private int shipIndex;
 	private boolean setShip;
+	private boolean[] shipsAlive;
 	
 	public Board() {
 		grid = new boolean[10][10];
 		ships = new Ship[5];
 		setShip = true;
+		shipsAlive = new boolean[5];
 	}
 	
 	//returns true if point hit a ship
@@ -45,14 +47,37 @@ public class Board {
 		
 	}
 	
-	//returns if all ships have been added
+	//returns true if all ships have been added
 	public boolean allShips(){
-		return shipIndex == 4;
+		return shipIndex == 5;
 	}
 	
 	//ships can no longer be placed
 	public void stopPlacing(){
 		setShip = false;
+	}
+	
+	//returns true if another ship has been sank !SINCE LAST CALL!
+	public boolean sankShip(){
+		boolean[] newShips = new boolean[5];
+		for (int i = 0; i < 5; i++){
+			newShips[i] = ships[i].hasSank();
+		}
+		for (int i = 0; i < 5; i++){
+			if (newShips[i] != shipsAlive[i]) {
+				shipsAlive = newShips;
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	//returns true if all ships are dead
+	public boolean gameOver(){
+		for (boolean b : shipsAlive)
+			if (!b)
+				return false;
+		return true;
 	}
 	
 }

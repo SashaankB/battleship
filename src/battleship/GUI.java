@@ -10,6 +10,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
@@ -30,8 +31,9 @@ public class GUI extends Application {
 	private Button[][] aiGrid, grid;
 	private int shipButtonLength;
 	private Board aiBoard, board;
-	private boolean direction;
+	private boolean direction, allowPlacing;
 	private Button start;
+	private AI ai;
 	
     public static void main(String[] args) {
         launch(args);
@@ -58,6 +60,7 @@ public class GUI extends Application {
         ships = new ToggleGroup();
         aiBoard = new Board();
         board = new Board();
+        ai = new AI();
         setShip(0, 65, 112);
         setShip(1, 46, 180);
         setShip(2, 49, 245);
@@ -94,14 +97,16 @@ public class GUI extends Application {
     		if (!aiBoard.allShips())
     			JOptionPane.showMessageDialog(null, "All ships must be placed to start game.", "Battleship", JOptionPane.INFORMATION_MESSAGE, null);
     		else {
+    			allowPlacing = true;
     			aiBoard.stopPlacing();
+    			JOptionPane.showMessageDialog(null, "Game starting...", "Battleship", JOptionPane.INFORMATION_MESSAGE, null);
     		}
     	});
     	pane.getChildren().add(start);
     }
     
     private void setBoard() {
-    	int startX = 705;
+    	int startX = 704;
         int startY = 421;
         int sizeB = 38;
     	grid = new Button[10][10];
@@ -114,15 +119,52 @@ public class GUI extends Application {
         		grid[x][y].setLayoutX(startX + sizeB * x);
         		grid[x][y].setLayoutY(startY - sizeB * y);
         		grid[x][y].setPrefSize(sizeB, sizeB);
+        		grid[x][y].setMaxSize(sizeB, sizeB);
         		grid[x][y].setOpacity(0.6);
-        		//grid[x][y].setOnMouseEntered(e -> mouseEntered(innerX, innerY));
-        		//grid[x][y].setOnMouseExited(e -> mouseExited(innerX, innerY));
-        		//grid[x][y].setOnMousePressed(e -> mousePressed(innerX, innerY, e));
+        		grid[x][y].setOnMousePressed(e -> gridMousePressed(innerX, innerY));
         		pane.getChildren().add(grid[x][y]);
         	}
         }
     }
     
+    private void gridMousePressed(int x, int y) {
+    	Point p = new Point(x, y);
+    	if (!aiBoard.allShips() || board.getPoint(p) || !allowPlacing)
+    		return;
+    	
+    	ImageView check = new ImageView(new Image(Main.class.getResourceAsStream("/check.png"), 30, 30, true, true));
+    	ImageView redx = new ImageView(new Image(Main.class.getResourceAsStream("/redx.png"), 30, 30, true, true));
+    	if (board.setPoint(p)) {
+    		grid[x][y].setGraphic(check);
+    		grid[x][y].setStyle("-fx-padding: 0, 0, 0, 0;");
+    		if (board.sankShip())
+    			JOptionPane.showMessageDialog(null, "You have sank an enemy ship!", "Battleship", JOptionPane.INFORMATION_MESSAGE, null);
+    		if (board.gameOver())
+    			JOptionPane.showMessageDialog(null, "Congratulations! You won!", "Battleship", JOptionPane.INFORMATION_MESSAGE, null);
+    	} else {
+    		grid[x][y].setGraphic(redx);
+    		grid[x][y].setStyle("-fx-padding: 0, 0, 0, 0;");
+    	}
+    	advanceTurn();
+    }
+    
+    private void advanceTurn() {
+    	Point p = ai.nextTurn(aiBoard);
+    	ImageView check = new ImageView(new Image(Main.class.getResourceAsStream("/check.png"), 30, 30, true, true));
+    	ImageView redx = new ImageView(new Image(Main.class.getResourceAsStream("/redx.png"), 30, 30, true, true));
+    	if (aiBoard.setPoint(p)) {
+    		aiGrid[p.x][p.y].setGraphic(check);
+    		aiGrid[p.x][p.y].setStyle("-fx-padding: 0, 0, 0, 0;");
+    		aiGrid[p.x][p.y].setOpacity(0.5);
+    		if (aiBoard.sankShip())
+    			JOptionPane.showMessageDialog(null, "You have lost a ship!", "Battleship", JOptionPane.INFORMATION_MESSAGE, null);
+    		if (aiBoard.gameOver())
+    			JOptionPane.showMessageDialog(null, "You lose.", "Battleship", JOptionPane.INFORMATION_MESSAGE, null);
+    	} else {
+    		aiGrid[p.x][p.y].setGraphic(redx);
+    		aiGrid[p.x][p.y].setStyle("-fx-padding: 0, 0, 0, 0;");
+    	}
+    }
 
     private void setShip(int index, double x, double y){
     	Image temp = new Image(Main.class.getResourceAsStream("/ship" + (index+1) + ".png"));
@@ -195,8 +237,9 @@ public class GUI extends Application {
         		direction = !direction;
         		return;
     		}
+    		direction = !direction;
         	for (int a = shipButtonLength-1; a >= 0; a--){
-        		if (direction) {
+        		if (!direction) {
         			if (allowShip(innerX, innerY + a))
         				aiGrid[innerX][innerY + a].setOpacity(0.6);
         			if (allowShip(innerX + a, innerY))
@@ -210,6 +253,7 @@ public class GUI extends Application {
         				aiGrid[innerX][innerY + a].setOpacity(0.2);
         		}
         	}
+        	direction = !direction;
     		return;
     	} else {
     		if (ships.getSelectedToggle() == null)
@@ -218,6 +262,11 @@ public class GUI extends Application {
         		return;
         	Ship ship = new Ship(new Point(innerX, innerY), direction, shipButtonLength);
         	aiBoard.addShip(ship);
+        	
+        	//!!!!NEEDS TO BE DELETED ONCE AI WORKS!!!!
+        	Ship ship2 = new Ship(new Point(innerX, innerY), direction, shipButtonLength);
+        	board.addShip(ship2);
+        	//!!DELETE ONCE AI WORKS!!
         	
         	int[] data = (int[]) ships.getSelectedToggle().getUserData();
     		shipImage[data[1]].setOpacity(0.4);
