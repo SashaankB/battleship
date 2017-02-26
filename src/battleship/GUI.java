@@ -1,19 +1,25 @@
 package battleship;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
+
+import javax.swing.JOptionPane;
 
 import javafx.application.Application;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import sun.applet.Main;
  
@@ -22,9 +28,12 @@ public class GUI extends Application {
 	private ToggleButton[] shipButton;
 	private ToggleGroup ships;
 	private AnchorPane pane;
-	private Button[][] aiGrid;
+	private Button[][] aiGrid, grid;
 	private int shipButtonLength;
-	private Board board;
+	private Board aiBoard, board;
+	private boolean direction, allowPlacing;
+	private Button start;
+	private AI ai;
 	
     public static void main(String[] args) {
         launch(args);
@@ -34,8 +43,8 @@ public class GUI extends Application {
     @Override
     public void start(Stage primaryStage) throws IOException {
         primaryStage.setTitle("Battleship");
-        
-        BackgroundImage BI = new BackgroundImage(new Image("battleshipBackground.png", 1094, 625,false,true),
+        Image image = new javafx.scene.image.Image(getClass().getResource("/BattleshipBackground.png").toExternalForm());
+        BackgroundImage BI = new BackgroundImage(image,
         		BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT,
                 BackgroundSize.DEFAULT);
 
@@ -49,7 +58,9 @@ public class GUI extends Application {
         shipImage = new ImageView[5];
         shipButton = new ToggleButton[5];
         ships = new ToggleGroup();
+        aiBoard = new Board();
         board = new Board();
+        ai = new AI();
         setShip(0, 65, 112);
         setShip(1, 46, 180);
         setShip(2, 49, 245);
@@ -59,10 +70,16 @@ public class GUI extends Application {
         ships.selectedToggleProperty().addListener(o -> {
         	if (ships.getSelectedToggle() == null)
         		shipButtonLength = 0;
-        	else
-        		shipButtonLength = (int) ships.getSelectedToggle().getUserData();
+        	else {
+        		int[] data = (int[]) ships.getSelectedToggle().getUserData();
+        		shipButtonLength = data[0];
+        	}
         });
         placeShips();
+        sGameButton();
+        setBoard();
+        
+        
         
         Scene scene = new Scene(pane);
         primaryStage.setScene(scene);
@@ -70,8 +87,84 @@ public class GUI extends Application {
              
     }
     
-
+    private void sGameButton() {
+    	start = new Button("Start Game");
+    	start.setLayoutX(733);
+    	start.setLayoutY(502);
+    	start.setPrefSize(122, 52);
+    	start.setFont(new Font(16.0));
+    	start.setOnMousePressed(e -> {
+    		if (!aiBoard.allShips())
+    			JOptionPane.showMessageDialog(null, "All ships must be placed to start game.", "Battleship", JOptionPane.INFORMATION_MESSAGE, null);
+    		else {
+    			allowPlacing = true;
+    			aiBoard.stopPlacing();
+    			JOptionPane.showMessageDialog(null, "Game starting...", "Battleship", JOptionPane.INFORMATION_MESSAGE, null);
+    		}
+    	});
+    	pane.getChildren().add(start);
+    }
+    
+    private void setBoard() {
+    	int startX = 704;
+        int startY = 421;
+        int sizeB = 38;
+    	grid = new Button[10][10];
     	
+        for (int x = 0; x < 10; x++){
+        	for (int y = 0; y < 10; y++){
+        		final Integer innerX = new Integer(x);
+        		final Integer innerY = new Integer(y);
+        		grid[x][y] = new Button();
+        		grid[x][y].setLayoutX(startX + sizeB * x);
+        		grid[x][y].setLayoutY(startY - sizeB * y);
+        		grid[x][y].setPrefSize(sizeB, sizeB);
+        		grid[x][y].setMaxSize(sizeB, sizeB);
+        		grid[x][y].setOpacity(0.6);
+        		grid[x][y].setOnMousePressed(e -> gridMousePressed(innerX, innerY));
+        		pane.getChildren().add(grid[x][y]);
+        	}
+        }
+    }
+    
+    private void gridMousePressed(int x, int y) {
+    	Point p = new Point(x, y);
+    	if (!aiBoard.allShips() || board.getPoint(p) || !allowPlacing)
+    		return;
+    	
+    	ImageView check = new ImageView(new Image(Main.class.getResourceAsStream("/check.png"), 30, 30, true, true));
+    	ImageView redx = new ImageView(new Image(Main.class.getResourceAsStream("/redx.png"), 30, 30, true, true));
+    	if (board.setPoint(p)) {
+    		grid[x][y].setGraphic(check);
+    		grid[x][y].setStyle("-fx-padding: 0, 0, 0, 0;");
+    		if (board.sankShip())
+    			JOptionPane.showMessageDialog(null, "You have sank an enemy ship!", "Battleship", JOptionPane.INFORMATION_MESSAGE, null);
+    		if (board.gameOver())
+    			JOptionPane.showMessageDialog(null, "Congratulations! You won!", "Battleship", JOptionPane.INFORMATION_MESSAGE, null);
+    	} else {
+    		grid[x][y].setGraphic(redx);
+    		grid[x][y].setStyle("-fx-padding: 0, 0, 0, 0;");
+    	}
+    	advanceTurn();
+    }
+    
+    private void advanceTurn() {
+    	Point p = ai.nextTurn(aiBoard);
+    	ImageView check = new ImageView(new Image(Main.class.getResourceAsStream("/check.png"), 30, 30, true, true));
+    	ImageView redx = new ImageView(new Image(Main.class.getResourceAsStream("/redx.png"), 30, 30, true, true));
+    	if (aiBoard.setPoint(p)) {
+    		aiGrid[p.x][p.y].setGraphic(check);
+    		aiGrid[p.x][p.y].setStyle("-fx-padding: 0, 0, 0, 0;");
+    		aiGrid[p.x][p.y].setOpacity(0.5);
+    		if (aiBoard.sankShip())
+    			JOptionPane.showMessageDialog(null, "You have lost a ship!", "Battleship", JOptionPane.INFORMATION_MESSAGE, null);
+    		if (aiBoard.gameOver())
+    			JOptionPane.showMessageDialog(null, "You lose.", "Battleship", JOptionPane.INFORMATION_MESSAGE, null);
+    	} else {
+    		aiGrid[p.x][p.y].setGraphic(redx);
+    		aiGrid[p.x][p.y].setStyle("-fx-padding: 0, 0, 0, 0;");
+    	}
+    }
 
     private void setShip(int index, double x, double y){
     	Image temp = new Image(Main.class.getResourceAsStream("/ship" + (index+1) + ".png"));
@@ -85,7 +178,8 @@ public class GUI extends Application {
     	shipButton[index].setOpacity(0.0);
     	shipButton[index].setToggleGroup(ships);
     	//length of ship is width of ship image / 34 pixels
-    	shipButton[index].setUserData((int) temp.getWidth() / 34);
+    	int[] data = {(int) temp.getWidth() / 34, index};
+    	shipButton[index].setUserData(data);
     	pane.getChildren().add(shipImage[index]);
     	pane.getChildren().add(shipButton[index]);    
     	
@@ -106,49 +200,113 @@ public class GUI extends Application {
         		aiGrid[x][y].setLayoutY(startY - sizeB * y);
         		aiGrid[x][y].setPrefSize(sizeB, sizeB);
         		aiGrid[x][y].setOpacity(0.6);
-        		aiGrid[x][y].setOnMouseEntered(new EventHandler<MouseEvent>() {
-    		        @Override public void handle(MouseEvent e) {
-    		        	if (!allowShip(innerX, innerY))
-    		        		return;
-    		        	for (int a = shipButtonLength-1; a >= 0; a--){  
-    		        		aiGrid[innerX][innerY + a].setOpacity(0.20);
-    		        	}
-    		        }
-        		});
-        		aiGrid[x][y].setOnMouseExited(new EventHandler<MouseEvent>() {
-    		        @Override public void handle(MouseEvent e) {
-    		        	if (!allowShip(innerX, innerY))
-    		        		return;
-    		        	for (int a = shipButtonLength-1; a >= 0; a--){
-    		        		aiGrid[innerX][innerY + a].setOpacity(0.6);
-    		        	}
-    		        }
-        		});
-        		aiGrid[x][y].setOnMousePressed(new EventHandler<MouseEvent>() {
-    		        @Override public void handle(MouseEvent e) {
-    		        	if (!allowShip(innerX, innerY))
-    		        		return;
-    		        	Ship ship = new Ship(new Point(innerX, innerY), false, shipButtonLength);
-    		        	board.addShip(ship);
-    		        	ships.getSelectedToggle().setUserData(0);
-    		        	for (int a =  shipButtonLength-1; a >= 0; a--){  
-    		        		//aiGrid[innerX][innerY + a].setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(5))));
-    		        		aiGrid[innerX][innerY + a].setOpacity(0.0);
-    		        	}
-    		        	shipButtonLength = 0;
-    		        }
-        		});
+        		aiGrid[x][y].setOnMouseEntered(e -> mouseEntered(innerX, innerY));
+        		aiGrid[x][y].setOnMouseExited(e -> mouseExited(innerX, innerY));
+        		aiGrid[x][y].setOnMousePressed(e -> mousePressed(innerX, innerY, e));
         		pane.getChildren().add(aiGrid[x][y]);
         	}
         }
     }
     
+    private void mouseEntered(int x, int y) {
+    	if (!allowWholeShip(x, y))
+    		return;
+    	for (int a = shipButtonLength-1; a >= 0; a--){  
+    		if (!direction)
+    			aiGrid[x][y + a].setOpacity(0.2);
+    		else
+    			aiGrid[x + a][y].setOpacity(0.2);
+    	}
+    }
+    
+    private void mouseExited(int x, int y) {
+    	if (!allowWholeShip(x, y))
+    		return;
+    	for (int a = shipButtonLength-1; a >= 0; a--){
+    		if (!direction)
+    			aiGrid[x][y + a].setOpacity(0.6);
+    		else
+    			aiGrid[x + a][y].setOpacity(0.6);
+    	}
+    }
+    
+    private void mousePressed(int innerX, int innerY, MouseEvent e) {
+    	if (e.getButton() == MouseButton.SECONDARY) {
+    		direction = !direction;
+    		if (!allowWholeShip(innerX, innerY)) {
+        		direction = !direction;
+        		return;
+    		}
+    		direction = !direction;
+        	for (int a = shipButtonLength-1; a >= 0; a--){
+        		if (!direction) {
+        			if (allowShip(innerX, innerY + a))
+        				aiGrid[innerX][innerY + a].setOpacity(0.6);
+        			if (allowShip(innerX + a, innerY))
+        				aiGrid[innerX + a][innerY].setOpacity(0.2);
+        			
+        		}
+        		else {
+        			if (allowShip(innerX + a, innerY))
+        				aiGrid[innerX + a][innerY].setOpacity(0.6);
+        			if (allowShip(innerX, innerY + a))
+        				aiGrid[innerX][innerY + a].setOpacity(0.2);
+        		}
+        	}
+        	direction = !direction;
+    		return;
+    	} else {
+    		if (ships.getSelectedToggle() == null)
+    			return;
+        	if (!allowWholeShip(innerX, innerY))
+        		return;
+        	Ship ship = new Ship(new Point(innerX, innerY), direction, shipButtonLength);
+        	aiBoard.addShip(ship);
+        	
+        	//!!!!NEEDS TO BE DELETED ONCE AI WORKS!!!!
+        	Ship ship2 = new Ship(new Point(innerX, innerY), direction, shipButtonLength);
+        	board.addShip(ship2);
+        	//!!DELETE ONCE AI WORKS!!
+        	
+        	int[] data = (int[]) ships.getSelectedToggle().getUserData();
+    		shipImage[data[1]].setOpacity(0.4);
+        	ships.getSelectedToggle().setUserData(new int[] {0, data[1]});
+        	for (int a =  shipButtonLength-1; a >= 0; a--){
+        		if (!direction)
+        			aiGrid[innerX][innerY + a].setOpacity(0.0);
+        		else
+        			aiGrid[innerX + a][innerY].setOpacity(0.0);
+
+        	}
+        	shipButtonLength = 0;
+    	}
+    }
+    
     private boolean allowShip(int x, int y) {
-    	if (y + shipButtonLength > 10)
-    		return false;
-    	for (int i = shipButtonLength-1; i >= 0; i--){
-    		if (board.isShip(new Point(x, y + i)))
+    	if (!direction) {
+	    	if (y > 9)
+	    		return false;
+    		if (aiBoard.isShip(new Point(x, y)))
     			return false;
+    	} else {
+    		if (x > 9)
+	    		return false;
+    		if (aiBoard.isShip(new Point(x, y)))
+    			return false;
+    	}
+    	return true;
+    }
+    
+    private boolean allowWholeShip(int x, int y){
+    	for (int i = shipButtonLength-1; i >= 0; i--){
+    		if (!direction) {
+    			if (!allowShip(x, y + i)) {
+    				return false;
+    			}
+    		} else {
+    			if (!allowShip(x + i, y))
+    				return false;
+    		}
     	}
     	return true;
     }
