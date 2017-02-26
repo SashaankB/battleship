@@ -59,10 +59,8 @@ public class AI {
 		Point p = new Point(randx, randy);
 		boolean randomdirection = Math.random() < 0.5;		
 		
-		Ship s = new Ship(p, randomdirection, randy);
+		Ship s = new Ship(p, randomdirection, location);
 
-		Ship [] ship = s;
-		return ship[s];
 	}
 	
 	/*Parameter is a board instance
