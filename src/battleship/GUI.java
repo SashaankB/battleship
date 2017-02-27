@@ -6,6 +6,7 @@ import java.lang.reflect.Array;
 import javax.swing.JOptionPane;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -32,36 +33,70 @@ public class GUI extends Application {
 	private int shipButtonLength;
 	private Board aiBoard, board;
 	private boolean direction, allowPlacing;
-	private Button start;
+	private Button start, reset;
 	private AI ai;
+	private Stage primaryStage;
 	
     public static void main(String[] args) {
         launch(args);
     }
     
-    
     @Override
-    public void start(Stage primaryStage) throws IOException {
-        primaryStage.setTitle("Battleship");
-        Image image = new javafx.scene.image.Image(getClass().getResource("/BattleshipBackground.png").toExternalForm());
-        BackgroundImage BI = new BackgroundImage(image,
-        		BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT,
-                BackgroundSize.DEFAULT);
-
-        primaryStage.setResizable(false);
-        primaryStage.sizeToScene();
-        FXMLLoader loader = new FXMLLoader();
-        loader.setLocation(Main.class.getResource("/View.fxml"));
-        pane =  loader.load();
-        pane.setBackground(new Background(BI));
-        
-        shipImage = new ImageView[5];
+    public void start(Stage primaryStage) {
+        startGame(primaryStage);
+    }
+    
+    private void startGame(Stage primaryStage) {
+    	this.primaryStage = primaryStage;
+    	shipImage = new ImageView[5];
         shipButton = new ToggleButton[5];
         ships = new ToggleGroup();
         aiBoard = new Board();
         board = new Board();
         ai = new AI();
-        setShip(0, 65, 112);
+        pane = new AnchorPane();
+       
+        Image image = new javafx.scene.image.Image(getClass().getResource("/BattleshipBackground.png").toExternalForm());
+        BackgroundImage BI = new BackgroundImage(image, BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, BackgroundSize.DEFAULT);
+        
+        pane.setBackground(new Background(BI));
+        pane.setPrefSize(1094, 625);
+        createMenuBar();
+        placeShips();
+        sGameButton();
+        resetButton();
+        setBoard();
+        createShips();
+        
+        Scene scene = new Scene(pane);
+        primaryStage.setScene(scene);
+        primaryStage.setTitle("Battleship");
+        primaryStage.setResizable(false);
+        primaryStage.sizeToScene();
+        primaryStage.show();
+    }
+    
+    private void createMenuBar() {
+    	MenuBar menuBar = new MenuBar();
+        menuBar.setPrefSize(1094, 25);
+        Menu file = new Menu("File");
+        MenuItem reset = new MenuItem("Reset");
+        reset.setOnAction(e -> {
+        	allowPlacing = false;
+    		startGame(primaryStage);
+        });
+        MenuItem close = new MenuItem("Close");
+        close.setOnAction(e -> {
+        	Platform.exit();
+        	System.exit(0);
+        });
+        file.getItems().addAll(reset, close);
+        menuBar.getMenus().addAll(file);
+        pane.getChildren().add(menuBar);
+    }
+    
+    private void createShips() {
+    	setShip(0, 65, 112);
         setShip(1, 46, 180);
         setShip(2, 49, 245);
         setShip(3, 20, 312);
@@ -75,16 +110,19 @@ public class GUI extends Application {
         		shipButtonLength = data[0];
         	}
         });
-        placeShips();
-        sGameButton();
-        setBoard();
-        
-        
-        
-        Scene scene = new Scene(pane);
-        primaryStage.setScene(scene);
-        primaryStage.show();
-             
+    }
+    
+    private void resetButton() {
+    	reset = new Button("Reset");
+    	reset.setLayoutX(893);
+    	reset.setLayoutY(502);
+    	reset.setPrefSize(122, 52);
+    	reset.setFont(new Font(16.0));
+    	reset.setOnMousePressed(e -> {
+    		allowPlacing = false;
+    		startGame(primaryStage);
+    	});
+    	pane.getChildren().add(reset);
     }
     
     private void sGameButton() {
@@ -97,6 +135,8 @@ public class GUI extends Application {
     		if (!aiBoard.allShips())
     			JOptionPane.showMessageDialog(null, "All ships must be placed to start game.", "Battleship", JOptionPane.INFORMATION_MESSAGE, null);
     		else {
+    			if (allowPlacing)
+    				return;
     			allowPlacing = true;
     			aiBoard.stopPlacing();
     			JOptionPane.showMessageDialog(null, "Game starting...", "Battleship", JOptionPane.INFORMATION_MESSAGE, null);
@@ -120,6 +160,7 @@ public class GUI extends Application {
         		grid[x][y].setLayoutY(startY - sizeB * y);
         		grid[x][y].setPrefSize(sizeB, sizeB);
         		grid[x][y].setMaxSize(sizeB, sizeB);
+        		grid[x][y].setStyle("-fx-background-color: -fx-outer-border, -fx-inner-border, -fx-body-color; -fx-background-insets: -1.4, 0, 1, 2; ");
         		grid[x][y].setOpacity(0.6);
         		grid[x][y].setOnMousePressed(e -> gridMousePressed(innerX, innerY));
         		pane.getChildren().add(grid[x][y]);
@@ -200,6 +241,7 @@ public class GUI extends Application {
         		aiGrid[x][y].setLayoutY(startY - sizeB * y);
         		aiGrid[x][y].setPrefSize(sizeB, sizeB);
         		aiGrid[x][y].setOpacity(0.6);
+        		aiGrid[x][y].setStyle("-fx-background-color: -fx-outer-border, -fx-inner-border, -fx-body-color; -fx-background-insets: -1.4, 0, 1, 2; ");
         		aiGrid[x][y].setOnMouseEntered(e -> mouseEntered(innerX, innerY));
         		aiGrid[x][y].setOnMouseExited(e -> mouseExited(innerX, innerY));
         		aiGrid[x][y].setOnMousePressed(e -> mousePressed(innerX, innerY, e));
