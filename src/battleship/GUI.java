@@ -138,7 +138,7 @@ public class GUI extends Application {
     			if (allowPlacing)
     				return;
     			allowPlacing = true;
-    			aiBoard.stopPlacing();
+    			aiBoard.startGame();
     			JOptionPane.showMessageDialog(null, "Game starting...", "Battleship", JOptionPane.INFORMATION_MESSAGE, null);
     		}
     	});
