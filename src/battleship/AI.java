@@ -1,11 +1,13 @@
 package battleship;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 public class AI {	
 	//Keeps track of either hunt/target mode
 	private boolean hunt;
 	private int currentRow;
+	
 	
 	public AI() {
 		currentRow = 0;
@@ -19,49 +21,55 @@ public class AI {
 	
 	//AI Logic for setting the five ships
 	//Preferably random with ships not touching
-	public Ship[] setShips(){
-		
-		return null;
-		
-	}
-	
-//	public static int [] randomship(Ship ships){
+//	public Ship[] setShips(){
 //		Random randomGenerator = new Random();
-//		int randx = randomGenerator.nextInt(10);
+//		int randx = randomGenerator.nextInt(9);
 //		System.out.println("Random x = " + randx);
-//		int randy = randomGenerator.nextInt(10);
+//		int randy = randomGenerator.nextInt(9);
 //		System.out.println("Random y = " + randy);
-//		
-//		int shipSize = ships.getShipSize();
-//		int valid = 11-shipSize;
-//		
-//		System.out.println("ship size" + shipSize);
-//		if(randx <= valid){
-//			System.out.println("valid ship placement");
+//		Point p = new Point(randx, randy);
+//		boolean randomdirection = Math.random() < 0.5;		
+//		int shipAmount = 5;
+//		int length = 5;
+//		Ship [] aiShip = new Ship[3];
+//		while (shipAmount > 0){
+//			Ship s = new Ship(p, randomdirection, length);
+//			shipAmount--;
+//			length--;
 //		}
-//		else{
-//			System.out.println("no valid");
-//			
-//		}
-//		int [] start = new int[2];
-//		start[0] = randx;
-//		start[1] = randy;
-//		return start;
+//		aiShip[0] = p;
+//		
+//
+//		return aiShip;
 //	}
 	
-
-	public void randomShip(){
+	public static int [] randomship(Ship ships){
 		Random randomGenerator = new Random();
 		int randx = randomGenerator.nextInt(10);
 		System.out.println("Random x = " + randx);
 		int randy = randomGenerator.nextInt(10);
 		System.out.println("Random y = " + randy);
-		Point p = new Point(randx, randy);
-		boolean randomdirection = Math.random() < 0.5;		
 		
-		Ship s = new Ship(p, randomdirection, location);
-
+		int shipSize = ships.getShipLength();
+		int valid = 11-shipSize;
+		
+		System.out.println("ship size" + shipSize);
+		if(randx <= valid){
+			System.out.println("valid ship placement");
+		}
+		else if(randy <= valid){
+			System.out.println("valid placement");
+		}
+		else{
+			System.out.println("no valid");
+			
+		}
+		int [] start = new int[2];
+		start[0] = randx;
+		start[1] = randy;
+		return start;
 	}
+	
 	
 	/*Parameter is a board instance
 	 * Returns point to hit for next turn
