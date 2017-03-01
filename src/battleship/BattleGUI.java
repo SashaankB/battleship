@@ -27,7 +27,7 @@ import sun.applet.Main;
 
 /** Launches GUI application for Battleship Game.
  * @author Kellin McAvoy, Nathan Kelderman, Sean Thomas */
-public class BattleMain extends Application {
+public class BattleGUI extends Application {
 	
 	/** Array for images of ship objects. */
 	private ImageView[] shipImage;
