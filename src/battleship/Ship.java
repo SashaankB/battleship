@@ -69,4 +69,22 @@ public class Ship {
 	public boolean hasSank() {
 		return hit == length;
 	}
+	
+	/** Get method for length.
+	 * @return Length of ship. */
+	public int getLength() {
+		return length;
+	}
+	
+	/** Get method for direction.
+	 * @return Direction boolean, true is horizontal and false is vertical.*/
+	public boolean getDirection() {
+		return direction;
+	}
+	
+	/** Get method for ship point. 
+	 * @return */
+	public Point getPoint() {
+		return p;
+	}
 }

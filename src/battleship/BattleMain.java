@@ -27,7 +27,7 @@ import sun.applet.Main;
 
 /** Launches GUI application for Battleship Game.
  * @author Kellin McAvoy, Nathan Kelderman, Sean Thomas */
-public class GUI extends Application {
+public class BattleMain extends Application {
 	
 	/** Array for images of ship objects. */
 	private ImageView[] shipImage;
@@ -124,7 +124,6 @@ public class GUI extends Application {
         MenuItem close = new MenuItem("Close");
         close.setOnAction(e -> {
         	Platform.exit();
-        	System.exit(0);
         });
         file.getItems().addAll(resetMI, close);
         menuBar.getMenus().addAll(file);
@@ -381,10 +380,7 @@ public class GUI extends Application {
         	Ship ship = new Ship(new Point(x, y), direction, shipButtonLength);
         	aiBoard.addShip(ship);
         	
-        	//!!!!NEEDS TO BE DELETED ONCE AI WORKS!!!!
-        	Ship ship2 = new Ship(new Point(x, y), direction, shipButtonLength);
-        	board.addShip(ship2);
-        	//!!DELETE ONCE AI WORKS!!
+        	board = ai.setShips();
         	
         	int[] data = (int[]) ships.getSelectedToggle().getUserData();
     		shipImage[data[1]].setOpacity(0.4);

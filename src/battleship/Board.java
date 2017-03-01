@@ -30,7 +30,7 @@ public class Board {
 	/** Marks a point on the board, toggling the point to true.
 	 * @param point Point which to toggle.
 	 * @return Returns true if point marked a ship. */
-	public boolean setPoint(final Point point) {
+	public boolean setPoint(Point point) {
 		grid[point.x][point.y] = true;
 		for (Ship s : ships) {
 			if (s.hit(point)) {
@@ -43,16 +43,28 @@ public class Board {
 	/** Gets a point on the board.
 	 * @param point Point to return from board.
 	 * @return boolean true if point has been marked before. */
-	public boolean getPoint(final Point point) {
+	public boolean getPoint(Point point) {
 		return grid[point.x][point.y];
 	}
 	
 	/** Adds ship to top of stack.
 	 * @param ship Ship to add to stack.
-	 * @return False if stack is full. */
-	public boolean addShip(final Ship ship) {
+	 * @return False if add ship fails. */
+	public boolean addShip(Ship ship) {
 		if (shipIndex > 4) {
 			return false;
+		}
+		Point p = ship.getPoint();
+		for (int i = 0; i < ship.getLength(); i++) {
+			if (ship.getDirection()) {
+				if (isShip(new Point(p.x + i, p.y))) {
+					return false;
+				}
+			} else {
+				if (isShip(new Point(p.x, p.y + i))) {
+					return false;
+				}
+			}
 		}
 		ships[shipIndex] = ship;
 		shipIndex++;
@@ -63,7 +75,7 @@ public class Board {
 	 * started.
 	 * @param point Point to check for ship.
 	 * @return True if ship is on that point. */
-	public boolean isShip(final Point point) {
+	public boolean isShip(Point point) {
 		if (gameStarted || shipIndex == 0) {
 			return false;
 		} else {

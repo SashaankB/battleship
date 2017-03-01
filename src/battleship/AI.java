@@ -1,63 +1,54 @@
 package battleship;
 
-import java.util.ArrayList;
 import java.util.Random;
 /** AI class for design making. 
  * @author Kellin McAvoy, Nathan Kelderman, Sean Thomas */
 public class AI {	
 	
-	//AI Logic for setting the five ships
-	//Preferably random with ships not touching
-//	public Ship[] setShips(){
-//		Random randomGenerator = new Random();
-//		int randx = randomGenerator.nextInt(9);
-//		System.out.println("Random x = " + randx);
-//		int randy = randomGenerator.nextInt(9);
-//		System.out.println("Random y = " + randy);
-//		Point p = new Point(randx, randy);
-//		boolean randomdirection = Math.random() < 0.5;		
-//		int shipAmount = 5;
-//		int length = 5;
-//		Ship [] aiShip = new Ship[3];
-//		while (shipAmount > 0){
-//			Ship s = new Ship(p, randomdirection, length);
-//			shipAmount--;
-//			length--;
-//		}
-//		aiShip[0] = p;
-//		
-//
-//		return aiShip;
-//	}
-	
-	public static int [] randomship(Ship ships){
-		Random randomGenerator = new Random();
-		int randx = randomGenerator.nextInt(10);
-		System.out.println("Random x = " + randx);
-		int randy = randomGenerator.nextInt(10);
-		System.out.println("Random y = " + randy);
-		
-		int shipSize = 0;
-		//int shipSize = ships.getShipLength();
-		int valid = 11-shipSize;
-		
-		System.out.println("ship size" + shipSize);
-		if(randx <= valid){
-			System.out.println("valid ship placement");
+	/** Constructs a board with all 5 ships placed on it in random locations.
+	 * @return Board board with all 5 ships placed. */
+	public Board setShips() {
+		boolean[] addShips = new boolean[5];
+		int[] lengths = {2, 3, 3, 4, 5};
+		Board board = new Board();
+		while (!boolArray(addShips)) {
+			for (int i = 0; i < 5; i++) {
+				if (!addShips[i]) {
+					addShips[i] = board.addShip(randomShip(lengths[i]));
+				}
+			}
 		}
-		else if(randy <= valid){
-			System.out.println("valid placement");
-		}
-		else{
-			System.out.println("no valid");
-			
-		}
-		int [] start = new int[2];
-		start[0] = randx;
-		start[1] = randy;
-		return start;
+		return board;
 	}
 	
+	/** Evaluates an array of booleans.
+	 * @param bool Array of booleans.
+	 * @return true if and only if all values are true.*/
+	private boolean boolArray(boolean[] bool) {
+		for (boolean b : bool) {
+			if (!b) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	/** Creates a ship with random point and direction.
+	 * @param length Integer length of ship.
+	 * @return Ship new random ship. */
+	private Ship randomShip(int length) {
+		Point p = randomPoint();
+		Random random = new Random();
+		boolean direction = random.nextBoolean();
+		Ship ship;
+		try {
+			ship = new Ship(p, direction, length);
+		} catch (IndexOutOfBoundsException e) {
+			return randomShip(length);
+		}
+		return ship;
+
+	}
 	
 	/** Generates a move for next turn based on status of board. 
 	 * @param board The current instance of the board. 
@@ -73,10 +64,11 @@ public class AI {
 	/** Creates a random point with two integers between 0-9.
 	 * @return Point New random point. */
 	private Point randomPoint() {
-		return new Point((int) (Math.random() * 9.99), (int) (Math.random() * 9.99)); 
+		Random random = new Random();
+		return new Point(random.nextInt(10), random.nextInt(10)); 
 	}
 	
-	/*	Good code for parity later when hunt/target is applied.
+	/*	Unfinished Code for Release Two::
 	    int row;
 		int col;
 		//checks to see if currentRow is out of bounds
